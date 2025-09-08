@@ -42,6 +42,10 @@ def list_passengers(db: Session = Depends(get_db)):
 def update_passenger(passenger_id: int, passenger: schemas.PassengerCreate, db: Session = Depends(get_db)):
     return crud.update_passenger(db, passenger_id, passenger)
 
+@app.delete("/passengers/{passenger_id}")
+def delete_passenger(passenger_id: int, db: Session = Depends(get_db)):
+    return crud.delete_passenger(db, passenger_id)
+
 # -------- Bookings --------
 @app.post("/bookings", response_model=schemas.BookingOut)
 def add_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
@@ -55,6 +59,10 @@ def list_bookings(db: Session = Depends(get_db)):
 def update_booking(booking_id: int, booking: schemas.BookingCreate, db: Session = Depends(get_db)):
     return crud.update_booking(db, booking_id, booking)
 
+@app.delete("/bookings/{booking_id}")
+def delete_booking(booking_id: int, db: Session = Depends(get_db)):
+    return crud.delete_booking(db, booking_id)
+
 # -------- Payments --------
 @app.post("/payments", response_model=schemas.PaymentOut)
 def add_payment(payment: schemas.PaymentCreate, db: Session = Depends(get_db)):
@@ -67,6 +75,10 @@ def list_payments(db: Session = Depends(get_db)):
 @app.put("/payments/{payment_id}", response_model=schemas.PaymentOut)
 def update_payment(payment_id: int, payment: schemas.PaymentCreate, db: Session = Depends(get_db)):
     return crud.update_payment(db, payment_id, payment)
+
+@app.delete("/payments/{payment_id}")
+def delete_payment(payment_id: int, db: Session = Depends(get_db)):
+    return crud.delete_payment(db, payment_id)
 
 # -------- Vendors --------
 @app.post("/vendors", response_model=schemas.VendorOut)

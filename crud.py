@@ -22,6 +22,14 @@ def update_passenger(db: Session, passenger_id: int, passenger: schemas.Passenge
     db.refresh(db_passenger)
     return db_passenger
 
+def delete_passenger(db: Session, passenger_id: int):
+    db_passenger = db.query(models.Passenger).filter(models.Passenger.id == passenger_id).first()
+    if db_passenger:
+        db.delete(db_passenger)
+        db.commit()
+        return {"ok": True}
+    return {"ok": False}
+
 # -------- Bookings --------
 def create_booking(db: Session, booking: schemas.BookingCreate):
     db_booking = models.Booking(**booking.dict())
@@ -44,6 +52,14 @@ def update_booking(db: Session, booking_id: int, booking: schemas.BookingCreate)
     db.refresh(db_booking)
     return db_booking
 
+def delete_booking(db: Session, booking_id: int):
+    db_booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if db_booking:
+        db.delete(db_booking)
+        db.commit()
+        return {"ok": True}
+    return {"ok": False}
+
 # -------- Payments --------
 def create_payment(db: Session, payment: schemas.PaymentCreate):
     db_payment = models.Payment(**payment.dict())
@@ -65,6 +81,14 @@ def update_payment(db: Session, payment_id: int, payment: schemas.PaymentCreate)
     db.commit()
     db.refresh(db_payment)
     return db_payment
+
+def delete_payment(db: Session, payment_id: int):
+    db_payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    if db_payment:
+        db.delete(db_payment)
+        db.commit()
+        return {"ok": True}
+    return {"ok": False}
 
 # -------- Vendors --------
 def create_vendor(db: Session, vendor: schemas.VendorCreate):
