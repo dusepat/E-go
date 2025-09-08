@@ -1,150 +1,78 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, EmailStr
-from typing import List, Dict
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+import models, schemas, crud
+from database import SessionLocal, engine
 
-app = FastAPI(title="E-go API", version="1.2")
+# Create tables
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="E-go API with PostgreSQL")
 
 from fastapi.middleware.cors import CORSMiddleware
 
-# allow frontend to talk to FastAPI
+app = FastAPI(title="E-go API with PostgreSQL")
+
+# Add this after creating the app
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # in production: set only your frontend domain
+    allow_origins=["*"],  # Or specify your frontend origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------------- Mock Data Stores ----------------
-passengers: List[Dict] = []
-bookings: List[Dict] = []
-payments: List[Dict] = []
-vendors: List[Dict] = [
-    {"id": 301, "name": "Snack Bar Kigali", "service": "Snacks"},
-    {"id": 302, "name": "Café Huye", "service": "Meals"},
-]
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# ---------------- Data Models ----------------
-class Passenger(BaseModel):
-    name: str
-    email: EmailStr
+# -------- Passengers --------
+@app.post("/passengers", response_model=schemas.PassengerOut)
+def add_passenger(passenger: schemas.PassengerCreate, db: Session = Depends(get_db)):
+    return crud.create_passenger(db, passenger)
 
-class Booking(BaseModel):
-    passenger_id: int
-    route: str
-    seat: str
+@app.get("/passengers", response_model=list[schemas.PassengerOut])
+def list_passengers(db: Session = Depends(get_db)):
+    return crud.get_passengers(db)
 
-class Payment(BaseModel):
-    booking_id: int
-    amount: float
-    status: str
+@app.put("/passengers/{passenger_id}", response_model=schemas.PassengerOut)
+def update_passenger(passenger_id: int, passenger: schemas.PassengerCreate, db: Session = Depends(get_db)):
+    return crud.update_passenger(db, passenger_id, passenger)
 
-# ---------------- Helper ----------------
-def generate_id(data: List[Dict]) -> int:
-    return len(data) + 1
+# -------- Bookings --------
+@app.post("/bookings", response_model=schemas.BookingOut)
+def add_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
+    return crud.create_booking(db, booking)
 
-# ---------------- Root ----------------
-@app.get("/")
-def root():
-    return {"message": "Welcome to E-go API 🚍"}
+@app.get("/bookings", response_model=list[schemas.BookingOut])
+def list_bookings(db: Session = Depends(get_db)):
+    return crud.get_bookings(db)
 
-# ---------------- Passengers ----------------
-@app.get("/passengers")
-def list_passengers() -> List[Dict]:
-    return passengers
+@app.put("/bookings/{booking_id}", response_model=schemas.BookingOut)
+def update_booking(booking_id: int, booking: schemas.BookingCreate, db: Session = Depends(get_db)):
+    return crud.update_booking(db, booking_id, booking)
 
-@app.post("/passengers")
-def create_passenger(passenger: Passenger):
-    for p in passengers:
-        if p["email"] == passenger.email:
-            raise HTTPException(status_code=400, detail="Email already exists")
-    new_passenger = passenger.dict()
-    new_passenger["id"] = generate_id(passengers)
-    passengers.append(new_passenger)
-    return {"status": "success", "data": new_passenger}
+# -------- Payments --------
+@app.post("/payments", response_model=schemas.PaymentOut)
+def add_payment(payment: schemas.PaymentCreate, db: Session = Depends(get_db)):
+    return crud.create_payment(db, payment)
 
-@app.put("/passengers/{passenger_id}")
-def update_passenger(passenger_id: int, passenger: Passenger):
-    for p in passengers:
-        if p["id"] == passenger_id:
-            p.update(passenger.dict())
-            return {"status": "success", "data": p}
-    raise HTTPException(status_code=404, detail="Passenger not found")
+@app.get("/payments", response_model=list[schemas.PaymentOut])
+def list_payments(db: Session = Depends(get_db)):
+    return crud.get_payments(db)
 
-@app.delete("/passengers/{passenger_id}")
-def delete_passenger(passenger_id: int):
-    for p in passengers:
-        if p["id"] == passenger_id:
-            passengers.remove(p)
-            return {"status": "success", "message": "Passenger deleted"}
-    raise HTTPException(status_code=404, detail="Passenger not found")
+@app.put("/payments/{payment_id}", response_model=schemas.PaymentOut)
+def update_payment(payment_id: int, payment: schemas.PaymentCreate, db: Session = Depends(get_db)):
+    return crud.update_payment(db, payment_id, payment)
 
-# ---------------- Bookings ----------------
-@app.get("/bookings")
-def list_bookings() -> List[Dict]:
-    return bookings
+# -------- Vendors --------
+@app.post("/vendors", response_model=schemas.VendorOut)
+def add_vendor(vendor: schemas.VendorCreate, db: Session = Depends(get_db)):
+    return crud.create_vendor(db, vendor)
 
-@app.post("/bookings")
-def create_booking(booking: Booking):
-    passenger = next((p for p in passengers if p["id"] == booking.passenger_id), None)
-    if not passenger:
-        raise HTTPException(status_code=404, detail="Passenger not found")
-    for b in bookings:
-        if b["route"] == booking.route and b["seat"] == booking.seat:
-            raise HTTPException(status_code=400, detail="Seat already booked on this route")
-    new_booking = booking.dict()
-    new_booking["id"] = generate_id(bookings)
-    bookings.append(new_booking)
-    return {"status": "success", "data": new_booking}
-
-@app.put("/bookings/{booking_id}")
-def update_booking(booking_id: int, booking: Booking):
-    for b in bookings:
-        if b["id"] == booking_id:
-            b.update(booking.dict())
-            return {"status": "success", "data": b}
-    raise HTTPException(status_code=404, detail="Booking not found")
-
-@app.delete("/bookings/{booking_id}")
-def delete_booking(booking_id: int):
-    for b in bookings:
-        if b["id"] == booking_id:
-            bookings.remove(b)
-            return {"status": "success", "message": "Booking deleted"}
-    raise HTTPException(status_code=404, detail="Booking not found")
-
-# ---------------- Payments ----------------
-@app.get("/payments")
-def list_payments() -> List[Dict]:
-    return payments
-
-@app.post("/payments")
-def create_payment(payment: Payment):
-    booking = next((b for b in bookings if b["id"] == payment.booking_id), None)
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    new_payment = payment.dict()
-    new_payment["id"] = generate_id(payments)
-    payments.append(new_payment)
-    return {"status": "success", "data": new_payment}
-
-@app.put("/payments/{payment_id}")
-def update_payment(payment_id: int, payment: Payment):
-    for pay in payments:
-        if pay["id"] == payment_id:
-            pay.update(payment.dict())
-            return {"status": "success", "data": pay}
-    raise HTTPException(status_code=404, detail="Payment not found")
-
-@app.delete("/payments/{payment_id}")
-def delete_payment(payment_id: int):
-    for pay in payments:
-        if pay["id"] == payment_id:
-            payments.remove(pay)
-            return {"status": "success", "message": "Payment deleted"}
-    raise HTTPException(status_code=404, detail="Payment not found")
-
-# ---------------- Vendors (Read-only for now) ----------------
-@app.get("/vendors")
-def list_vendors() -> List[Dict]:
-    return vendors
+@app.get("/vendors", response_model=list[schemas.VendorOut])
+def list_vendors(db: Session = Depends(get_db)):
+    return crud.get_vendors(db)
