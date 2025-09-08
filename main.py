@@ -63,6 +63,13 @@ def update_booking(booking_id: int, booking: schemas.BookingCreate, db: Session 
 def delete_booking(booking_id: int, db: Session = Depends(get_db)):
     return crud.delete_booking(db, booking_id)
 
+@app.post("/bookings", response_model=schemas.BookingOut)
+def add_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
+    passenger = db.query(models.Passenger).filter(models.Passenger.id == booking.passenger_id).first()
+    if not passenger:
+        raise HTTPException(status_code=400, detail="Passenger does not exist.")
+    return crud.create_booking(db, booking)
+
 # -------- Payments --------
 @app.post("/payments", response_model=schemas.PaymentOut)
 def add_payment(payment: schemas.PaymentCreate, db: Session = Depends(get_db)):

@@ -181,6 +181,25 @@
       loadAll();
     });
 
+  document.getElementById("bookingForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const passenger_id = parseInt(document.getElementById("bPassengerId").value);
+    const route = document.getElementById("bRoute").value;
+    const seat = document.getElementById("bSeat").value;
+    const res = await fetch(`${API}/bookings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ passenger_id, route, seat })
+    });
+  if (!res.ok) {
+    const error = await res.json();
+    alert(error.detail || "Error adding booking.");
+    return;
+  }
+  e.target.reset();
+  loadAll();
+}); 
+
     function loadAll() {
       fetchData("passengers", "passengerTable");
       fetchData("bookings", "bookingTable");
@@ -188,6 +207,7 @@
     }
 
     loadAll();
+
   </script>
 
 </body>
