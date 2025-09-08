@@ -1,0 +1,10 @@
+Here is what we may update. On the real platform we want the passenger to select the pickup location and the destination. After that, the system passes through the routes and rides available then shows available rides to that destination regardless of the company and then predicts the amount to pay.
+For example: The passenger chooses that she wants to move from Nyagatare to Musanze.
+Then the system analyses the routes available and shows the following for the passenger to choose the best one.
+
+1. Nyagatare-Remera, Remera-Nyabugogo, Nyabugogo-Musanze. The cost of a ride is 6900Rwf
+2. Nyagatare-Nyabugogo, Nyabugogo-Rubavu, Rubavu-Musanze. the cost of Ride is 7100Rwf
+3. Nyagatare-Nyabugogo, Nyabugogo-Musanze. The cost of ride is 7500Rwf.
+   We should arrange the rides is descending order of the cost.
+
+Is it possible to integrate that now and see if it would work with PostgreSQL?

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>E-go Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    table, th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    button { margin: 4px; padding: 5px 10px; }
+    input { padding: 5px; margin: 4px; }
+  </style>
+</head>
+<body>
+
+  <h1>🚍 E-go Admin Dashboard</h1>
+
+  <h2>Passengers</h2>
+  <form id="passengerForm">
+    <input type="text" id="pName" placeholder="Name" required>
+    <input type="email" id="pEmail" placeholder="Email" required>
+    <button type="submit">Add Passenger</button>
+  </form>
+  <table id="passengerTable">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Email</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Bookings</h2>
+  <form id="bookingForm">
+    <input type="number" id="bPassengerId" placeholder="Passenger ID" required>
+    <input type="text" id="bRoute" placeholder="Route" required>
+    <input type="text" id="bSeat" placeholder="Seat" required>
+    <button type="submit">Add Booking</button>
+  </form>
+  <table id="bookingTable">
+    <thead>
+      <tr><th>ID</th><th>Passenger ID</th><th>Route</th><th>Seat</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Payments</h2>
+  <form id="paymentForm">
+    <input type="number" id="payBookingId" placeholder="Booking ID" required>
+    <input type="number" step="0.01" id="payAmount" placeholder="Amount" required>
+    <input type="text" id="payStatus" placeholder="Status" required>
+    <button type="submit">Add Payment</button>
+  </form>
+  <table id="paymentTable">
+    <thead>
+      <tr><th>ID</th><th>Booking ID</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const API = "http://127.0.0.1:8000";
+
+    async function fetchData(endpoint, tableId) {
+      const res = await fetch(`${API}/${endpoint}`);
+      const data = await res.json();
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML = "";
+      data.forEach(item => {
+        const row = `<tr>
+          <td>${item.id}</td>
+          ${endpoint === "passengers" ? `<td>${item.name}</td><td>${item.email}</td>` : ""}
+          ${endpoint === "bookings" ? `<td>${item.passenger_id}</td><td>${item.route}</td><td>${item.seat}</td>` : ""}
+          ${endpoint === "payments" ? `<td>${item.booking_id}</td><td>${item.amount}</td><td>${item.status}</td>` : ""}
+          <td>
+            <button onclick="deleteItem('${endpoint}', ${item.id})">Delete</button>
+          </td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    async function deleteItem(endpoint, id) {
+      await fetch(`${API}/${endpoint}/${id}`, { method: "DELETE" });
+      loadAll();
+    }
+
+    document.getElementById("passengerForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = document.getElementById("pName").value;
+      const email = document.getElementById("pEmail").value;
+      await fetch(`${API}/passengers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+      });
+      e.target.reset();
+      loadAll();
+    });
+
+    document.getElementById("bookingForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const passenger_id = parseInt(document.getElementById("bPassengerId").value);
+      const route = document.getElementById("bRoute").value;
+      const seat = document.getElementById("bSeat").value;
+      await fetch(`${API}/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passenger_id, route, seat })
+      });
+      e.target.reset();
+      loadAll();
+    });
+
+    document.getElementById("paymentForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const booking_id = parseInt(document.getElementById("payBookingId").value);
+      const amount = parseFloat(document.getElementById("payAmount").value);
+      const status = document.getElementById("payStatus").value;
+      await fetch(`${API}/payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id, amount, status })
+      });
+      e.target.reset();
+      loadAll();
+    });
+
+    function loadAll() {
+      fetchData("passengers", "passengerTable");
+      fetchData("bookings", "bookingTable");
+      fetchData("payments", "paymentTable");
+    }
+
+    loadAll();
+  </script>
+
+</body>
+</html>
