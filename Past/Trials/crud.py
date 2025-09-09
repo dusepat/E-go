@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
+from main import get_db
 import models, schemas
+from fastapi import FastAPI, Depends, HTTPException
 
 # -------- Passengers --------
 def create_passenger(db: Session, passenger: schemas.PassengerCreate):
@@ -59,6 +61,7 @@ def delete_booking(db: Session, booking_id: int):
         db.commit()
         return {"ok": True}
     return {"ok": False}
+
 
 # -------- Payments --------
 def create_payment(db: Session, payment: schemas.PaymentCreate):

@@ -10,7 +10,6 @@ app = FastAPI(title="E-go API with PostgreSQL")
 
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="E-go API with PostgreSQL")
 
 # Add this after creating the app
 app.add_middleware(
@@ -47,9 +46,6 @@ def delete_passenger(passenger_id: int, db: Session = Depends(get_db)):
     return crud.delete_passenger(db, passenger_id)
 
 # -------- Bookings --------
-@app.post("/bookings", response_model=schemas.BookingOut)
-def add_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
-    return crud.create_booking(db, booking)
 
 @app.get("/bookings", response_model=list[schemas.BookingOut])
 def list_bookings(db: Session = Depends(get_db)):

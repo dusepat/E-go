@@ -74,28 +74,58 @@
 
         if (endpoint === "passengers") {
           row += `<td>${item.id}</td>
-            <td><span>${item.name}</span><input type="text" value="${item.name}" style="display:none"></td>
-            <td><span>${item.email}</span><input type="email" value="${item.email}" style="display:none"></td>`;
+            <td>
+              <span>${item.name}</span>
+              <input type="text" value="${item.name}" style="display:none">
+            </td>
+            <td>
+              <span>${item.email}</span>
+              <input type="email" value="${item.email}" style="display:none">
+              </td>`;
         }
 
         if (endpoint === "bookings") {
           row += `<td>${item.id}</td>
-            <td><span>${item.passenger_id}</span><input type="number" value="${item.passenger_id}" style="display:none"></td>
-            <td><span>${item.route}</span><input type="text" value="${item.route}" style="display:none"></td>
-            <td><span>${item.seat}</span><input type="text" value="${item.seat}" style="display:none"></td>`;
+            <td>
+              <span>${item.passenger_id}</span>
+              <input type="number" value="${item.passenger_id}" style="display:none">
+            </td>
+            <td>
+              <span>${item.route}</span>
+              <input type="text" value="${item.route}" style="display:none">
+            </td>
+            <td>
+              <span>${item.seat}</span>
+              <input type="text" value="${item.seat}" style="display:none">
+            </td>`;
         }
 
         if (endpoint === "payments") {
           row += `<td>${item.id}</td>
-            <td><span>${item.booking_id}</span><input type="number" value="${item.booking_id}" style="display:none"></td>
-            <td><span>${item.amount}</span><input type="number" step="0.01" value="${item.amount}" style="display:none"></td>
-            <td><span>${item.status}</span><input type="text" value="${item.status}" style="display:none"></td>`;
+            <td>
+              <span>${item.booking_id}</span>
+              <input type="number" value="${item.booking_id}" style="display:none">
+            </td>
+            <td>
+              <span>${item.amount}</span>
+              <input type="number" step="0.01" value="${item.amount}" style="display:none">
+            </td>
+            <td>
+              <span>${item.status}</span>
+              <input type="text" value="${item.status}" style="display:none">
+            </td>`;
         }
 
         row += `<td>
-          <button onclick="enableEdit('${endpoint}', ${item.id})">Edit</button>
-          <button onclick="saveEdit('${endpoint}', ${item.id})" style="display:none">Save</button>
-          <button onclick="deleteItem('${endpoint}', ${item.id})">Delete</button>
+          <button onclick="enableEdit('${endpoint}', ${item.id})">
+            Edit
+          </button>
+          <button onclick="saveEdit('${endpoint}', ${item.id})" style="display:none">
+            Save
+          </button>
+          <button onclick="deleteItem('${endpoint}', ${item.id})">
+            Delete
+          </button>
         </td></tr>`;
 
         tbody.innerHTML += row;
@@ -181,24 +211,24 @@
       loadAll();
     });
 
-  document.getElementById("bookingForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const passenger_id = parseInt(document.getElementById("bPassengerId").value);
-    const route = document.getElementById("bRoute").value;
-    const seat = document.getElementById("bSeat").value;
-    const res = await fetch(`${API}/bookings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ passenger_id, route, seat })
-    });
-  if (!res.ok) {
-    const error = await res.json();
-    alert(error.detail || "Error adding booking.");
-    return;
-  }
-  e.target.reset();
-  loadAll();
-}); 
+    document.getElementById("bookingForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const passenger_id = parseInt(document.getElementById("bPassengerId").value);
+      const route = document.getElementById("bRoute").value;
+      const seat = document.getElementById("bSeat").value;
+      const res = await fetch(`${API}/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passenger_id, route, seat })
+      });
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.detail || "Error adding booking.");
+      return;
+    }
+      e.target.reset();
+      loadAll();
+    }); 
 
     function loadAll() {
       fetchData("passengers", "passengerTable");
